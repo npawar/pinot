@@ -4297,4 +4297,8 @@ public class OfflineClusterIntegrationTest extends BaseClusterIntegrationTestSet
     }
     Assert.assertTrue(columnPresent, "Column " + newAddedColumn + " not present in result set");
   }
+
+  public static void main(String[] args) {
+
+  }
 }

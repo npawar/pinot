@@ -27,6 +27,7 @@ import org.apache.pinot.core.operator.blocks.ValueBlock;
 import org.apache.pinot.core.operator.transform.TransformResultMetadata;
 import org.apache.pinot.spi.data.FieldSpec.DataType;
 import org.apache.pinot.spi.utils.ArrayCopyUtils;
+import org.roaringbitmap.RoaringBitmap;
 
 
 public class CastTransformFunction extends BaseTransformFunction {
@@ -196,6 +197,13 @@ public class CastTransformFunction extends BaseTransformFunction {
     } else {
       return _transformFunction.transformToLongValuesSV(valueBlock);
     }
+  }
+
+  @Override
+  public RoaringBitmap getNullBitmap(ValueBlock valueBlock) {
+    // For timestamp casting, preserve the null bitmap from the source column
+    // This allows null values to be properly handled in the result
+    return _transformFunction.getNullBitmap(valueBlock);
   }
 
   @Override

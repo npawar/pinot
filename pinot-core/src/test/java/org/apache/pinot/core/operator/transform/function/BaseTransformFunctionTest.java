@@ -82,6 +82,7 @@ public abstract class BaseTransformFunctionTest {
   protected static final String STRING_SV_COLUMN = "stringSV";
   protected static final String JSON_STRING_SV_COLUMN = "jsonSV";
   protected static final String STRING_SV_NULL_COLUMN = "stringSVNull";
+  protected static final String TIMESTAMP_STRING_SV_NULL_COLUMN = "timestampStringSVNull";
   protected static final String BYTES_SV_COLUMN = "bytesSV";
   protected static final String VECTOR_1_COLUMN = "vector1";
   protected static final String VECTOR_2_COLUMN = "vector2";
@@ -117,6 +118,7 @@ public abstract class BaseTransformFunctionTest {
   protected final double[] _doubleSVValues = new double[NUM_ROWS];
   protected final BigDecimal[] _bigDecimalSVValues = new BigDecimal[NUM_ROWS];
   protected final String[] _stringSVValues = new String[NUM_ROWS];
+  protected final String[] _stringTimestampSVValues = new String[NUM_ROWS];
   protected final String[] _jsonSVValues = new String[NUM_ROWS];
   protected final String[] _jsonArrayValues = new String[NUM_ROWS];
   protected final String[] _stringAlphaNumericSVValues = new String[NUM_ROWS];
@@ -157,6 +159,7 @@ public abstract class BaseTransformFunctionTest {
       _bigDecimalSVValues[i] =
           BigDecimal.valueOf(RANDOM.nextDouble()).multiply(BigDecimal.valueOf(_intSVValues[i])).stripTrailingZeros();
       _stringSVValues[i] = df.format(_intSVValues[i] * RANDOM.nextDouble());
+      _stringTimestampSVValues[i] = "2025-07-18 11:30:00";
       _jsonSVValues[i] = String.format(
           "{\"intVal\":%s, \"longVal\":%s, \"floatVal\":%s, \"doubleVal\":%s, \"bigDecimalVal\":%s, "
               + "\"stringVal\":\"%s\", \"arrayField\": [{\"arrIntField\": 1, \"arrStringField\": \"abc\"}, "
@@ -230,8 +233,10 @@ public abstract class BaseTransformFunctionTest {
       map.put(STRING_SV_COLUMN, _stringSVValues[i]);
       if (isNullRow(i)) {
         map.put(STRING_SV_NULL_COLUMN, null);
+        map.put(TIMESTAMP_STRING_SV_NULL_COLUMN, null);
       } else {
         map.put(STRING_SV_NULL_COLUMN, _stringSVValues[i]);
+        map.put(TIMESTAMP_STRING_SV_NULL_COLUMN, _stringTimestampSVValues[i]);
       }
       map.put(STRING_ALPHANUM_SV_COLUMN, _stringAlphaNumericSVValues[i]);
       if (isNullRow(i)) {
@@ -286,6 +291,7 @@ public abstract class BaseTransformFunctionTest {
         .addSingleValueDimension(STRING_SV_COLUMN, FieldSpec.DataType.STRING)
         .addSingleValueDimension(JSON_STRING_SV_COLUMN, FieldSpec.DataType.STRING, 5000, "{}")
         .addSingleValueDimension(STRING_SV_NULL_COLUMN, FieldSpec.DataType.STRING)
+        .addSingleValueDimension(TIMESTAMP_STRING_SV_NULL_COLUMN, FieldSpec.DataType.STRING)
         .addSingleValueDimension(STRING_ALPHANUM_SV_COLUMN, FieldSpec.DataType.STRING)
         .addSingleValueDimension(STRING_ALPHANUM_NULL_SV_COLUMN, FieldSpec.DataType.STRING)
         .addSingleValueDimension(BYTES_SV_COLUMN, FieldSpec.DataType.BYTES)

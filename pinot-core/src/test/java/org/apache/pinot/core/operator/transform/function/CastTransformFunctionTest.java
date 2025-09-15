@@ -31,6 +31,7 @@ import org.testng.annotations.Test;
 
 import static org.apache.pinot.common.function.scalar.DataTypeConversionFunctions.cast;
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
 
@@ -286,5 +287,47 @@ public class CastTransformFunctionTest extends BaseTransformFunctionTest {
       }
     }
     testTransformFunctionWithNull(transformFunction, expectedValues, roaringBitmap);
+  }
+
+  @Test
+  public void testCastNullColumnTimestamp() {
+    // This test verifies that casting a column with null values to TIMESTAMP now works correctly
+    // Null values should be handled gracefully with proper null bitmap tracking
+    ExpressionContext expression =
+        RequestContextUtils.getExpression(String.format("cast(%s AS TIMESTAMP)", TIMESTAMP_STRING_SV_NULL_COLUMN));
+    TransformFunction transformFunction = TransformFunctionFactory.get(expression, _dataSourceMap);
+    Assert.assertTrue(transformFunction instanceof CastTransformFunction);
+    Assert.assertEquals(transformFunction.getName(), CastTransformFunction.FUNCTION_NAME);
+
+    // This should now work without throwing an exception
+    long[] timestampValues = transformFunction.transformToLongValuesSV(_projectionBlock);
+    RoaringBitmap nullBitmap = transformFunction.getNullBitmap(_projectionBlock);
+    // Verify that we get the expected number of values
+    Assert.assertEquals(timestampValues.length, NUM_ROWS);
+    // Verify that null bitmap is properly set for null rows
+    if (nullBitmap != null) {
+      for (int i = 0; i < NUM_ROWS; i++) {
+        if (isNullRow(i)) {
+          Assert.assertTrue(nullBitmap.contains(i), "Row " + i + " should be marked as null");
+          // For null rows, the timestamp value should be 0L (epoch)
+          Assert.assertEquals(timestampValues[i], 0L, "Null timestamp should be 0L");
+        } else {
+          Assert.assertFalse(nullBitmap.contains(i), "Row " + i + " should not be marked as null");
+          // For non-null rows, the timestamp should be a valid timestamp value
+          Assert.assertTrue(timestampValues[i] > 0L, "Non-null timestamp should be > 0L");
+        }
+      }
+    } else {
+      // If null bitmap is null, all values should be non-null
+      for (int i = 0; i < NUM_ROWS; i++) {
+        if (isNullRow(i)) {
+          // For null rows, the timestamp value should still be 0L (epoch) even without null bitmap
+          Assert.assertEquals(timestampValues[i], 0L, "Null timestamp should be 0L");
+        } else {
+          // For non-null rows, the timestamp should be a valid timestamp value
+          Assert.assertTrue(timestampValues[i] > 0L, "Non-null timestamp should be > 0L");
+        }
+      }
+    }
   }
 }

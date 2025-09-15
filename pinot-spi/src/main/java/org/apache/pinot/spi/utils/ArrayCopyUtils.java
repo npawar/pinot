@@ -268,7 +268,11 @@ public class ArrayCopyUtils {
 
   public static void copyToTimestamp(String[] src, long[] dest, int length) {
     for (int i = 0; i < length; i++) {
-      dest[i] = TimestampUtils.toMillisSinceEpoch(src[i]);
+      if (src[i] == null || "null".equals(src[i])) {
+        dest[i] = 0L; // Default value for null timestamps
+      } else {
+        dest[i] = TimestampUtils.toMillisSinceEpoch(src[i]);
+      }
     }
   }
 
